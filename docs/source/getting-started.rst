@@ -112,7 +112,7 @@ Now that you've gotten the lay of the land, let's dig in!
 Setting Up Maven
 ================
 
-We recommend you use Maven_ for new Dropwizard applications. If you're a big Ant_ / Ivy_, Buildr_,
+We recommend that you use Maven_ for new Dropwizard applications. If you're a big Ant_ / Ivy_, Buildr_,
 Gradle_, SBT_, Leiningen_, or Gant_ fan, that's cool, but we use Maven and we'll be using Maven as
 we go through this example application. If you have any questions about how Maven works,
 `Maven: The Complete Reference`__ should have what you're looking for. (We're assuming you know how
@@ -173,7 +173,7 @@ name to use in case the user doesn't specify their name.
 
 .. _example conf here: https://github.com/dropwizard/dropwizard/blob/master/dropwizard-example/src/main/java/com/example/helloworld/HelloWorldConfiguration.java
 
-Here's what our configuration class will looks like, full `example conf here`_ :
+Here's what our configuration class will look like (you can see a full-fledged configuration example `here`_ :
 
 .. _gs-configuration-class:
 
@@ -222,7 +222,7 @@ configuration file has blank values for either or is missing ``template`` entire
 exception will be thrown and your application won't start.
 
 Both the getters and setters for ``template`` and ``defaultName`` are annotated with
-``@JsonProperty``, which allows Jackson to both deserialize the properties from a YAML file but also
+``@JsonProperty``, which allows Jackson to both deserialize the properties from a YAML file and
 to serialize it.
 
 .. note::
@@ -238,7 +238,7 @@ to serialize it.
 
 .. _example yml here: https://github.com/dropwizard/dropwizard/blob/master/dropwizard-example/example.yml
 
-Our YAML file, will then look like the below, full `example yml here`_ :
+Our YAML file will then look like the one below, with a full example `here`_ :
 
 .. _gs-yaml-file:
 
@@ -250,8 +250,7 @@ Our YAML file, will then look like the below, full `example yml here`_ :
 Dropwizard has *many* more configuration parameters than that, but they all have sane defaults so
 you can keep your configuration files small and focused.
 
-So save that YAML file as ``hello-world.yml``, because we'll be getting up and running pretty soon
-and we'll need it. Next up, we're creating our application class!
+Save that YAML file as ``hello-world.yml``. Next up, we'll create our application class.
 
 .. _gs-application:
 
@@ -341,7 +340,7 @@ To model this representation, we'll create a representation class:
         private String content;
 
         public Saying() {
-            // Jackson deserialization
+            // empty constructor so that Jackson can deserialize an instance of this class
         }
 
         public Saying(long id, String content) {
@@ -366,7 +365,8 @@ First, it's immutable. This makes ``Saying`` instances *very* easy to reason abo
 environments as well as single-threaded environments. Second, it uses the Java Bean standard for the
 ``id`` and ``content`` properties. This allows Jackson_ to serialize it to the JSON we need. The
 Jackson object mapping code will populate the ``id`` field of the JSON object with the return value
-of ``#getId()``, likewise with ``content`` and ``#getContent()``. Lastly, the bean leverages validation to ensure the content size is no greater than 3.
+of ``#getId()``, likewise with ``content`` and ``#getContent()``. Lastly, the bean leverages validation
+to ensure the content size is no greater than 3.
 
 .. note::
 
@@ -465,9 +465,9 @@ Registering A Resource
 ----------------------
 
 Before that will actually work, though, we need to go back to ``HelloWorldApplication`` and add this
-new resource class. In its ``run`` method we can read the template and default name from the
-``HelloWorldConfiguration`` instance, create a new ``HelloWorldResource`` instance, and then add
-it to the application's Jersey environment:
+new resource class to the runtime environment. In its ``run`` method we can read the template and
+default name from the ``HelloWorldConfiguration`` instance, create a new ``HelloWorldResource`` instance,
+and then add it to the application's Jersey environment:
 
 .. code-block:: java
 
@@ -481,9 +481,8 @@ it to the application's Jersey environment:
         environment.jersey().register(resource);
     }
 
-When our application starts, we create a new instance of our resource class with the parameters from
-the configuration file and hand it off to the ``Environment``, which acts like a registry of all the
-things your application can do.
+The ``Environment`` instance passed into your ``run`` method provides access to other environments,
+such as Jersey, Jackson, Metrics, etc., allowing you to configure those individually.
 
 .. note::
 
@@ -535,7 +534,7 @@ make sure we can actually format the provided template:
     }
 
 
-``TemplateHealthCheck`` checks for two things: that the provided template is actually a well-formed
+``TemplateHealthCheck`` checks for two things: that the provided template is a well-formed
 format string, and that the template actually produces output with the given name.
 
 If the string is not a well-formed format string (for example, someone accidentally put
@@ -552,6 +551,7 @@ As with most things in Dropwizard, we create a new instance with the appropriate
 it to the ``Environment``:
 
 .. code-block:: java
+    :emphasize-lines: 10
 
     @Override
     public void run(HelloWorldConfiguration configuration,
@@ -574,10 +574,10 @@ Now we're almost ready to go!
 Building Fat JARs
 =================
 
-We recommend that you build your Dropwizard applications as "fat" JAR files — single ``.jar`` files
+We recommend that you build your Dropwizard applications as "fat" JAR files, i.e., single ``.jar`` files
 which contain *all* of the ``.class`` files required to run your application. This allows you to
-build a single deployable artifact which you can promote from your staging environment to your QA
-environment to your production environment without worrying about differences in installed
+build a single deployable, self-contained artifact which you can promote from your staging environment to
+your QA environment to your production environment without worrying about differences in installed
 libraries. To start building our Hello World application as a fat JAR, we need to configure a Maven
 plugin called ``maven-shade``. In the ``<build><plugins>`` section of your ``pom.xml`` file, add
 this:
@@ -620,7 +620,7 @@ this:
         </executions>
     </plugin>
 
-This configures Maven to do a couple of things during its ``package`` phase:
+This configures Maven to do the following during its ``package`` phase:
 
 * Produce a ``pom.xml`` file which doesn't include dependencies for the libraries whose contents are
   included in the fat JAR.
